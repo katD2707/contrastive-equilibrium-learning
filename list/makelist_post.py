@@ -2,7 +2,7 @@
 # Then run "python makelist_post.py"
 
 import numpy as np
-import sys
+import glob
 
 def generate_label(label):
     label_unique = list(set(label))
@@ -15,18 +15,19 @@ def generate_label(label):
 # start loading
 #spk = []
 file = []
-with open('path_vox2.txt') as f:
-    lines = f.readlines()
-    for i, v in enumerate(lines):
-        tmp = v.strip().split('/')[8:]
-        #spk.append(tmp[0])
-        file.append(tmp[0]+'/'+tmp[1]+'/'+tmp[2])
+path_to_dts = '../youtube-dataset/**'
+lang_vids = glob.glob(path_to_dts, recursive=True)
+
+for path in lang_vids:
+    check_path = path.split('\\')
+    if len(check_path) > 3:
+        file.append('/'.join(check_path[1:]))
 
 #spk_to_num = generate_label(spk)
 #print(len(np.unique(spk_to_num)))
-print(len(file))
-
-output = open('train_vox2.txt','w')
+# print(len(file))
+#
+output = open('train_youtube.txt','w')
 for i in range(len(file)):
     output.write(file[i]+'\n')
 output.close()

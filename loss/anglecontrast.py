@@ -28,7 +28,7 @@ class AngleContrastiveLoss(nn.Module):
         cos_sim_matrix1 = cos_sim_matrix * self.w + self.b
         cos_sim_matrix2 = cos_sim_matrix.transpose(0,1) * self.w + self.b
 
-        label   = torch.from_numpy(numpy.asarray(range(0, K))).cuda()
+        label   = torch.from_numpy(numpy.asarray(range(0, K))).long().cuda()
         nloss1  = self.criterion(cos_sim_matrix1, label)
         nloss2  = self.criterion(cos_sim_matrix2, label)
         nloss   = (nloss1 + nloss2)/2

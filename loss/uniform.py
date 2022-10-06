@@ -17,7 +17,7 @@ class Uniformity(nn.Module):
 
     def forward(self, x, label=None):
 
-        # Part of netgative pairs
+        # Part of negative pairs
         if self.sample_type == 'PoN':
             x1 = x[:,0,:]
             x2 = x[:,1,:]
@@ -25,7 +25,7 @@ class Uniformity(nn.Module):
             nloss2 = torch.pdist(x2, p=2).pow(2).mul(-self.t).exp().mean().log()
             nloss = (nloss1 + nloss2) / 2
 
-        # All positive and negtive pairs
+        # All positive and negative pairs
         elif self.sample_type == 'APN':
             x = torch.reshape(x, (-1,x.size()[-1]))
             nloss = torch.pdist(x, p=2).pow(2).mul(-self.t).exp().mean().log()
@@ -34,7 +34,7 @@ class Uniformity(nn.Module):
         elif self.sample_type == 'AN':
             x1 = x[:,0,:]
             x2 = x[:,1,:]
-            K  = x.size()[0]
+            K = x.size()[0]
 
             nloss1 = torch.pdist(x1, p=2).pow(2).mul(-self.t).exp().sum()
             nloss2 = torch.pdist(x2, p=2).pow(2).mul(-self.t).exp().sum()
