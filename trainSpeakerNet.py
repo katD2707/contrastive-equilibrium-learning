@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(description="SpeakerNet");
 parser.add_argument('--max_frames', type=int, default=180, help='Input length to the network');
 parser.add_argument('--eval_frames', type=int, default=0, help='Input length to the network');
 parser.add_argument('--batch_size', type=int, default=200, help='Batch size');
-parser.add_argument('--nDataLoaderThread', type=int, default=4, help='Number of loader threads');
+parser.add_argument('--nDataLoaderThread', type=int, default=2, help='Number of loader threads');
 
 ## Training details
 parser.add_argument('--test_interval', type=int, default=5, help='Test and save every [test_interval] epochs');

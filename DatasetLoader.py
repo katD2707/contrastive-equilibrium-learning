@@ -27,7 +27,7 @@ class wav_split(Dataset):
                  musan_path,
                  augment_anchor,
                  augment_type):
-        self.dataset_file_name = dataset_file_name; #list/youtube-dataset.txt
+        self.dataset_file_name = dataset_file_name;  # list/youtube-dataset.txt
         self.max_frames = max_frames;
 
         self.data_dict = {};
@@ -41,18 +41,19 @@ class wav_split(Dataset):
         self.noisetypes = ['noise', 'speech', 'music']
 
         self.noisesnr = {'noise': [0, 15], 'speech': [13, 20], 'music': [5, 15]}
-        self.noiselist = {}                                   # {'music': [file_1, file_2, ...], }
-        self.augment_anchor = augment_anchor                  # True
-        self.augment_type = augment_type                      # 3
-                                                                            # musan_path: MUSAN\musan_split
-        augment_files = glob.glob(os.path.join(musan_path, '*/*/*/*.wav'))  # MUSAN\musan_split\music\fma\music-fma-0000\*.wav
+        self.noiselist = {}  # {'music': [file_1, file_2, ...], }
+        self.augment_anchor = augment_anchor  # True
+        self.augment_type = augment_type  # 3
+        # musan_path: MUSAN\musan_split
+        augment_files = glob.glob(
+            os.path.join(musan_path, '*/*/*/*.wav'))  # MUSAN\musan_split\music\fma\music-fma-0000\*.wav
 
         for file in augment_files:
             if not file.split('\\')[-4] in self.noiselist:
                 self.noiselist[file.split('\\')[-4]] = []
             self.noiselist[file.split('\\')[-4]].append(file)
 
-        self.rir = numpy.load('rir.npy')                                    #[[...],[...],...] (1000, 11200)
+        self.rir = numpy.load('rir.npy')  # [[...],[...],...] (1000, 11200)
 
         ### Read Training Files...
         with open(dataset_file_name) as dataset_file:
@@ -62,11 +63,11 @@ class wav_split(Dataset):
                     break;
                 data = line.split();
                 filename = os.path.join(train_path, data[0]);
-                self.data_list.append(filename)                             #['train_file_1', ...]
+                self.data_list.append(filename)  # ['train_file_1', ...]
 
     def __getitem__(self, index):
 
-        audio = loadWAVSplit(self.data_list[index], self.max_frames).astype(numpy.float)    # [2, wav_length]
+        audio = loadWAVSplit(self.data_list[index], self.max_frames).astype(numpy.float)  # [2, wav_length]
 
         augment_profiles = []
         audio_aug = []
@@ -107,8 +108,8 @@ class wav_split(Dataset):
 
         audio_aug.append(self.augment_wav(audio[0], augment_profiles[0]))
         audio_aug.append(self.augment_wav(audio[1], augment_profiles[1]))
-                                                                    # [2, wav_length]
-        audio_aug = numpy.concatenate(audio_aug, axis=0)            # [..., N-mels, wav_length]
+        # [2, wav_length]
+        audio_aug = numpy.concatenate(audio_aug, axis=0)  # [..., N-mels, wav_length]
 
         feat = torch.FloatTensor(audio_aug)
 
@@ -178,7 +179,7 @@ def loadWAV(filename, max_frames, evalmode=True, num_eval=10):
         feats.append(audio)
     else:
         for asf in startframe:
-            feats.append(audio[int(asf):int(asf) + max_audio])              # [1, max_audio]
+            feats.append(audio[int(asf):int(asf) + max_audio])  # [1, max_audio]
 
     feat = numpy.stack(feats, axis=0)
 
@@ -194,15 +195,16 @@ def loadWAVSplit(filename, max_frames):
 
     audiosize = audio.shape[0]
 
-    if audiosize <= max_audio:
+    assert max_audio % 2 == 0
+
+    if audiosize <= 2*max_audio+2:
         shortage = math.floor((max_audio - audiosize + 1) / 2)
-        audio = numpy.pad(audio, (shortage, shortage), 'constant', constant_values=0)
-        audio = numpy.append(audio, 0)
+        audio = numpy.pad(audio, (1 + max_audio // 2 + shortage, max_audio // 2 + shortage + 1), 'constant',
+                          constant_values=0)
         audiosize = audio.shape[0]
 
-    randsize = audiosize - max_audio
-    startframe = random.sample(range(0, randsize+1), 2)
-    startframe.sort()
+    randsize = audiosize - max_audio * 2
+    startframe = random.sample(range(0, randsize), 2)
     startframe = numpy.array(startframe)
     assert randsize >= 1
 
@@ -215,7 +217,7 @@ def loadWAVSplit(filename, max_frames):
 
     feat = numpy.stack(feats, axis=0)
 
-    return feat;                                    # [2, max_audio]
+    return feat;  # [2, max_audio]
 
 
 def get_data_loader(dataset_file_name, batch_size, max_frames, nDataLoaderThread, train_path, augment_anchor,
